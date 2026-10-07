@@ -1,4 +1,4 @@
-# You Can't Have Your Stake and Eat It Too
+# Have Your Stake and Eat It Too?
 
 *Paschall v. Commissioner* and the taxation of crypto staking rewards. A class presentation for Tax Law, Finance, and Strategic Planning, by Andrew Ciacci.
 
