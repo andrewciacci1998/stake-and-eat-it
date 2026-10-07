@@ -59,6 +59,8 @@ blockquote{font-family:var(--serif);font-size:27px;line-height:1.35;border-left:
 .slide.active .blk{animation:rise .5s forwards;animation-delay:calc(var(--d)*260ms + 600ms)}
 .slide.active .link{animation:grow .4s forwards;animation-delay:calc(var(--d)*260ms + 800ms)}
 @keyframes grow{to{transform:scaleX(1)}}
+.tight ul.b li{font-size:17px;margin-bottom:8px;line-height:1.4}
+.tight ul.b li::before{top:10px}
 .cake.blk{width:auto;height:auto;border:0;background:none;padding:0;overflow:visible;text-align:center}
 .cake svg{overflow:visible;display:block}
 .cake .cap{font-family:var(--mono);font-size:12px;color:var(--gold);margin-top:6px;letter-spacing:.04em}
@@ -481,7 +483,7 @@ blockquote{font-family:var(--serif);font-size:27px;line-height:1.35;border-left:
 </section>
 
 <!-- 16 CONTRADICTIONS -->
-<section class="slide">
+<section class="slide tight">
   <div class="kicker rv">04 · Critiques</div>
   <h2 class="rv" style="--d:1;font-size:38px;margin-bottom:22px">Doctrinally tidy, internally inconsistent, and blind to how crypto works</h2>
   <div class="grid2" style="gap:28px">
