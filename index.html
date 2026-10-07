@@ -1,0 +1,632 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Your Stake and Eat It</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0c1220; --bg2:#121a2c; --panel:#18223a; --line:#2a3654;
+  --ink:#f1ede4; --muted:#9aa3b8; --green:#5ee08a; --gold:#e3b04b; --red:#f07167; --blue:#7aa7ff;
+  --serif:"Fraunces",Georgia,serif; --sans:"Inter",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#05080f;color:var(--ink);font-family:var(--sans);overflow:hidden}
+#viewport{position:fixed;inset:0;display:grid;place-items:center}
+#stage{width:1280px;height:720px;position:relative;transform-origin:center;background:var(--bg);overflow:hidden;
+  background-image:radial-gradient(circle at 85% 10%,rgba(94,224,138,.07),transparent 40%),radial-gradient(circle at 5% 95%,rgba(227,176,75,.06),transparent 40%)}
+.slide{position:absolute;inset:0;padding:64px 80px 70px;opacity:0;visibility:hidden;transition:opacity .45s ease,visibility .45s}
+.slide.active{opacity:1;visibility:visible}
+.rv{opacity:0;transform:translateY(16px)}
+.slide.active .rv{animation:rise .65s cubic-bezier(.2,.7,.2,1) forwards;animation-delay:calc(var(--d,0)*130ms + 120ms)}
+@keyframes rise{to{opacity:1;transform:none}}
+.kicker{font-family:var(--mono);font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:var(--green);margin-bottom:10px}
+h1{font-family:var(--serif);font-weight:700;font-size:96px;line-height:1;letter-spacing:-.02em}
+h2{font-family:var(--serif);font-weight:600;font-size:46px;line-height:1.08;letter-spacing:-.01em;margin-bottom:28px;max-width:1000px}
+h3{font-family:var(--serif);font-weight:600;font-size:26px;margin-bottom:12px}
+p,li{font-size:22px;line-height:1.45;color:var(--ink)}
+ul{list-style:none}
+ul.b li{position:relative;padding-left:26px;margin-bottom:12px}
+ul.b li::before{content:"";position:absolute;left:2px;top:13px;width:9px;height:9px;background:var(--green);transform:rotate(45deg)}
+ul.b.gold li::before{background:var(--gold)}
+.muted{color:var(--muted)}
+.small{font-size:18px}
+.cite{font-family:var(--mono);font-size:14px;color:var(--muted);letter-spacing:.02em}
+em{color:var(--gold);font-style:normal}
+strong{font-weight:600;color:#fff}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:36px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:24px 26px}
+.callout{border-left:4px solid var(--gold);background:rgba(227,176,75,.08);padding:16px 22px;border-radius:0 10px 10px 0;font-size:20px}
+.callout.g{border-color:var(--green);background:rgba(94,224,138,.08)}
+blockquote{font-family:var(--serif);font-size:27px;line-height:1.35;border-left:4px solid var(--green);padding:4px 0 4px 26px;margin-bottom:22px}
+.num{font-family:var(--mono);color:var(--green)}
+.tag{display:inline-block;font-family:var(--mono);font-size:13px;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:999px;border:1px solid var(--line);color:var(--muted);margin-bottom:12px}
+.tag.g{color:var(--green);border-color:rgba(94,224,138,.4)} .tag.y{color:var(--gold);border-color:rgba(227,176,75,.4)} .tag.r{color:var(--red);border-color:rgba(240,113,103,.4)}
+
+/* chrome */
+#progress{position:absolute;left:0;bottom:0;height:4px;background:var(--green);transition:width .4s ease;z-index:5}
+#count{position:absolute;right:28px;bottom:18px;font-family:var(--mono);font-size:13px;color:var(--muted);z-index:5}
+#brand{position:absolute;left:80px;bottom:18px;font-family:var(--mono);font-size:13px;color:#56607a;z-index:5;letter-spacing:.05em}
+#hint{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);font:12px var(--mono);color:#56607a;transition:opacity 1s}
+
+/* title chain */
+.chain{position:absolute;left:80px;right:80px;bottom:70px;display:flex;align-items:center;gap:0}
+.blk{width:120px;height:78px;border:1.5px solid var(--line);border-radius:10px;background:var(--bg2);font-family:var(--mono);font-size:11px;color:var(--muted);padding:10px 12px;opacity:0;transform:translateX(-20px)}
+.blk b{display:block;color:var(--green);font-size:12px;margin-bottom:4px}
+.link{flex:1;height:2px;background:linear-gradient(90deg,var(--green),var(--line));transform:scaleX(0);transform-origin:left}
+.slide.active .blk{animation:rise .5s forwards;animation-delay:calc(var(--d)*260ms + 600ms)}
+.slide.active .link{animation:grow .4s forwards;animation-delay:calc(var(--d)*260ms + 800ms)}
+@keyframes grow{to{transform:scaleX(1)}}
+.cake.blk{width:auto;height:auto;border:0;background:none;padding:0;overflow:visible;text-align:center}
+.cake svg{overflow:visible;display:block}
+.cake .cap{font-family:var(--mono);font-size:12px;color:var(--gold);margin-top:6px;letter-spacing:.04em}
+.cake .cap span{color:var(--muted)}
+.cake .slice,.cake .fork{transform-box:view-box}
+.cake .fork{transform:translateY(-40px);opacity:0}
+.slide.active .cake .fork{animation:forkin .6s ease-out forwards 2.3s}
+.slide.active .cake .slice{animation:take .9s cubic-bezier(.5,0,.3,1) forwards 3s}
+@keyframes forkin{to{transform:none;opacity:1}}
+@keyframes take{to{transform:translate(34px,-18px) rotate(8deg)}}
+.cake .flame{transform-origin:78px 14px;transform-box:view-box;animation:flick .5s ease-in-out infinite alternate}
+@keyframes flick{to{transform:scale(.8,1.15)}}
+
+/* roadmap */
+.road{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.road .card{min-height:150px}
+.road .n{font-family:var(--mono);font-size:30px;color:var(--green);margin-bottom:10px}
+.road h3{font-size:24px}
+
+/* wallets */
+.wal{display:flex;gap:20px;align-items:flex-start}
+.wal svg{flex:none}
+
+/* network */
+.node{fill:var(--bg2);stroke:var(--green);stroke-width:2}
+.edge{stroke:var(--line);stroke-width:1.5}
+.pulse{fill:var(--green)}
+.chk{opacity:0}
+.slide.active .chk{animation:pop .4s forwards;animation-delay:calc(var(--d)*180ms + 1.2s)}
+@keyframes pop{to{opacity:1}}
+
+/* pow pos */
+#hash{font-family:var(--mono);font-size:15px;color:var(--green);background:#08101c;border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0 16px;white-space:nowrap;overflow:hidden}
+.coins{display:flex;gap:6px;align-items:flex-end;height:60px;margin:10px 0 16px}
+.coin{width:34px;border-radius:6px;background:linear-gradient(180deg,#f2c766,#b98a2a);height:0}
+.slide.active .coin{animation:stack .6s cubic-bezier(.3,1.4,.5,1) forwards;animation-delay:calc(var(--d)*120ms + .5s)}
+@keyframes stack{to{height:var(--h)}}
+
+/* timeline */
+.tl{position:relative;display:grid;grid-template-columns:repeat(4,1fr);gap:22px;padding-top:44px}
+.tl::before{content:"";position:absolute;left:0;right:0;top:14px;height:2px;background:var(--line)}
+.tl .dot{position:absolute;top:-38px;width:18px;height:18px;border-radius:50%;background:var(--bg);border:3px solid var(--green)}
+.tl>div{position:relative}
+.tl .yr{font-family:var(--mono);color:var(--green);font-size:15px;margin-bottom:6px}
+.tl h3{font-size:21px;margin-bottom:6px}
+.tl p{font-size:17px;color:#d6d2c8}
+
+/* flow */
+.flow text{font-family:var(--sans);fill:var(--ink)}
+.box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+
+/* chart */
+.ax{stroke:var(--line);stroke-width:1}
+.axl{font:12px var(--mono);fill:var(--muted)}
+#adaLine{fill:none;stroke:var(--green);stroke-width:3;stroke-dasharray:1;stroke-dashoffset:1}
+.slide.active #adaLine{animation:draw 3s ease-in-out forwards .3s}
+@keyframes draw{to{stroke-dashoffset:0}}
+#adaFill{opacity:0}
+.slide.active #adaFill{animation:pop 1s forwards 2.8s}
+.ann{opacity:0}
+.slide.active .ann{animation:pop .6s forwards;animation-delay:calc(var(--d)*1ms)}
+
+/* pies */
+.pie{width:170px;height:170px;border-radius:50%;position:relative;margin:0 auto;box-shadow:0 0 0 2px var(--line)}
+.pieWrap{position:relative;width:170px;height:170px;margin:0 auto}
+.pieWrap .pie{position:absolute;inset:0}
+.pieWrap .after{opacity:0}
+.slide.active .pieWrap .after{animation:swap 4s ease-in-out infinite 1s}
+.slide.active .pieWrap .before{animation:swap 4s ease-in-out infinite reverse 1s}
+@keyframes swap{0%,40%{opacity:0}50%,90%{opacity:1}100%{opacity:0}}
+.pieLbl{text-align:center;font-family:var(--mono);font-size:14px;color:var(--muted);margin-top:12px;height:40px;position:relative}
+.pieLbl span{position:absolute;left:0;right:0}
+.pieLbl .after{opacity:0}
+.slide.active .pieLbl .after{animation:swap 4s ease-in-out infinite 1s}
+.slide.active .pieLbl .before{animation:swap 4s ease-in-out infinite reverse 1s}
+
+/* bars */
+.bars{display:flex;gap:18px;align-items:flex-end;height:200px;border-bottom:1px solid var(--line);padding:0 10px}
+.bar{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%}
+.bar i{display:block;width:100%;border-radius:6px 6px 0 0;height:var(--a);transition:height 1s}
+.slide.active .bar i{animation:barg 4s ease-in-out infinite 1s}
+@keyframes barg{0%,35%{height:var(--a)}50%,85%{height:var(--b)}100%{height:var(--a)}}
+.bar span{font:13px var(--mono);color:var(--muted);margin-top:8px}
+
+.big-q{font-family:var(--serif);font-size:150px;line-height:1;color:var(--green)}
+.icon{font-size:44px;line-height:1;margin-bottom:10px}
+</style>
+</head>
+<body>
+<div id="viewport"><div id="stage">
+
+<!-- 1 TITLE -->
+<section class="slide">
+  <div class="kicker rv" style="--d:0">Tax Law, Finance, and Strategic Planning</div>
+  <h1 class="rv" style="--d:1;font-size:84px;max-width:1000px">You Can’t Have Your Stake and Eat It Too</h1>
+  <p class="rv" style="--d:2;font-family:var(--serif);font-size:32px;margin-top:20px;max-width:900px;color:#d9d4c7">
+    <em>Paschall v. Commissioner</em> and the taxation of crypto staking rewards</p>
+  <p class="rv muted" style="--d:3;margin-top:28px;font-size:20px">Andrew Ciacci</p>
+  <div class="chain">
+    <div class="blk" style="--d:0"><b>STAKE</b>₳ 1,000<br>locked in</div><div class="link" style="--d:0"></div>
+    <div class="blk" style="--d:1"><b>JAN</b>reward<br>+ ₳ 4</div><div class="link" style="--d:1"></div>
+    <div class="blk" style="--d:2"><b>FEB</b>reward<br>+ ₳ 4</div><div class="link" style="--d:2"></div>
+    <div class="blk" style="--d:3"><b>MAR…</b>reward<br>+ ₳ 4</div><div class="link" style="--d:3"></div>
+    <div class="cake blk" style="--d:4">
+      <svg viewBox="0 0 190 130" width="190" height="130">
+        <ellipse cx="88" cy="118" rx="84" ry="8" fill="#2a3654"/>
+        <g>
+          <rect x="18" y="78" width="120" height="36" rx="3" fill="#8a5a33"/>
+          <rect x="18" y="72" width="120" height="8" fill="#f1ede4"/>
+          <rect x="18" y="44" width="120" height="30" rx="3" fill="#a06a3d"/>
+          <path d="M16 46 Q16 36 26 36 H130 Q140 36 140 46 V52 Q134 58 128 52 Q120 60 112 52 Q104 58 96 52 Q88 60 80 52 Q72 58 64 52 Q56 60 48 52 Q40 58 32 52 Q24 60 16 52 Z" fill="#e3b04b"/>
+          <rect x="74" y="14" width="8" height="24" rx="2" fill="#5ee08a"/>
+          <path class="flame" d="M78 2 Q84 10 78 14 Q72 10 78 2 Z" fill="#f07167"/>
+          <text x="78" y="68" text-anchor="middle" font-family="JetBrains Mono" font-size="14" font-weight="600" fill="#0c1220">₳</text>
+        </g>
+        <g class="slice">
+          <rect x="138" y="78" width="30" height="36" fill="#8a5a33"/>
+          <rect x="138" y="72" width="30" height="8" fill="#f1ede4"/>
+          <rect x="138" y="44" width="30" height="30" fill="#a06a3d"/>
+          <path d="M138 36 H158 Q168 36 168 46 V52 Q162 58 156 52 Q148 60 138 52 Z" fill="#e3b04b"/>
+          <g class="fork">
+            <path d="M153 -20 V20 M147 -20 V8 Q147 14 153 14 Q159 14 159 8 V-20" stroke="#9aa3b8" stroke-width="3" fill="none" stroke-linecap="round"/>
+            <text x="153" y="-26" text-anchor="middle" font-family="JetBrains Mono" font-size="12" font-weight="600" fill="#f07167">IRS</text>
+          </g>
+        </g>
+      </svg>
+      <div class="cap">IRS takes its slice <span>on receipt</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- 2 ROADMAP -->
+<section class="slide">
+  <div class="kicker rv">Roadmap</div>
+  <h2 class="rv" style="--d:1">Where we're going</h2>
+  <div class="road">
+    <div class="card rv" style="--d:2"><div class="n">01</div><h3>Crypto basics</h3><p class="small muted">Wallets, blockchains, and how consensus works</p></div>
+    <div class="card rv" style="--d:3"><div class="n">02</div><h3>The pre-<em>Paschall</em> baseline</h3><p class="small muted">Notice 2014-21 through Rev. Rul. 2023-14</p></div>
+    <div class="card rv" style="--d:4"><div class="n">03</div><h3><em>Paschall</em></h3><p class="small muted">Facts, procedural posture, and holding</p></div>
+    <div class="card rv" style="--d:5"><div class="n">04</div><h3>Critiques</h3><p class="small muted"><em>Macomber</em>, self-created property, and an alternative framing</p></div>
+    <div class="card rv" style="--d:6"><div class="n">05</div><h3>Implications</h3><p class="small muted">Policy problems, ambiguities, and room for good lawyering</p></div>
+    <div class="card rv" style="--d:7"><div class="n">06</div><h3>Questions</h3><p class="small muted">Discussion</p></div>
+  </div>
+</section>
+
+<!-- 3 CRYPTO BASICS -->
+<section class="slide">
+  <div class="kicker rv">01 · Crypto basics</div>
+  <h2 class="rv" style="--d:1">What is a digital asset?</h2>
+  <blockquote class="rv" style="--d:2">A digital representation of value recorded on a cryptographically secured distributed ledger — e.g., a blockchain.</blockquote>
+  <p class="cite rv" style="--d:2;margin:-12px 0 26px 30px">Cf. I.R.C. § 6045(g)(3)(D). No physical form: owning crypto means controlling its private key.</p>
+  <div class="grid2">
+    <div class="card wal rv" style="--d:3">
+      <svg width="64" height="64" viewBox="0 0 64 64"><path d="M8 26 L32 10 L56 26 Z" fill="none" stroke="#7aa7ff" stroke-width="3"/><rect x="12" y="28" width="6" height="22" fill="#7aa7ff"/><rect x="24" y="28" width="6" height="22" fill="#7aa7ff"/><rect x="36" y="28" width="6" height="22" fill="#7aa7ff"/><rect x="48" y="28" width="6" height="22" fill="#7aa7ff"/><rect x="6" y="52" width="52" height="5" fill="#7aa7ff"/></svg>
+      <div><h3>Hosted (custodial)</h3><p class="small">A third party — an exchange like eToro or Coinbase — holds the keys for you. Functions like a <strong>brokerage account</strong>.</p></div>
+    </div>
+    <div class="card wal rv" style="--d:4">
+      <svg width="64" height="64" viewBox="0 0 64 64"><circle cx="20" cy="32" r="12" fill="none" stroke="#e3b04b" stroke-width="4"/><path d="M32 32 H58 M50 32 V42 M42 32 V40" stroke="#e3b04b" stroke-width="4" fill="none" stroke-linecap="round"/></svg>
+      <div><h3>Unhosted (self-custody)</h3><p class="small">You hold the keys yourself — <strong>cash under the mattress</strong>. Lose the seed phrase and the coins are gone for good; no one can reset it.</p></div>
+    </div>
+  </div>
+  <p class="callout g rv small" style="--d:5;margin-top:24px">Why it matters here: Paschall used a <strong>hosted</strong> wallet — which is how eToro could restrict his transfers. How many stakers use hosted wallets and how many use their own is unknown (more on that later).</p>
+</section>
+
+<!-- 4 BLOCKCHAIN -->
+<section class="slide">
+  <div class="kicker rv">01 · Crypto basics</div>
+  <h2 class="rv" style="--d:1">What is a blockchain?</h2>
+  <div class="grid2" style="grid-template-columns:1.15fr .85fr;align-items:center">
+    <div>
+      <p class="rv" style="--d:2;margin-bottom:22px">A decentralized <strong>"distributed ledger"</strong> in which transactions are recorded and confirmed by many independent computers ("nodes") instead of one central authority.</p>
+      <ul class="b">
+        <li class="rv" style="--d:3"><strong>Public / permissionless:</strong> anyone can run a node — Bitcoin, Ethereum, Cardano</li>
+        <li class="rv" style="--d:4"><strong>Private / permissioned:</strong> an operator decides who validates — e.g., enterprise or bank settlement ledgers</li>
+        <li class="rv" style="--d:5">Built to record crypto transfers, but can also record ownership of traditional assets like stocks and bonds</li>
+      </ul>
+    </div>
+    <svg viewBox="0 0 400 340" width="420" class="rv" style="--d:3">
+      <g class="edges">
+        <line class="edge" x1="200" y1="50" x2="320" y2="120"/><line class="edge" x1="200" y1="50" x2="80" y2="120"/>
+        <line class="edge" x1="80" y1="120" x2="110" y2="270"/><line class="edge" x1="320" y1="120" x2="290" y2="270"/>
+        <line class="edge" x1="110" y1="270" x2="290" y2="270"/><line class="edge" x1="200" y1="170" x2="200" y2="50"/>
+        <line class="edge" x1="200" y1="170" x2="80" y2="120"/><line class="edge" x1="200" y1="170" x2="320" y2="120"/>
+        <line class="edge" x1="200" y1="170" x2="110" y2="270"/><line class="edge" x1="200" y1="170" x2="290" y2="270"/>
+      </g>
+      <circle r="5" class="pulse"><animateMotion dur="2.4s" repeatCount="indefinite" path="M200,170 L200,50"/></circle>
+      <circle r="5" class="pulse"><animateMotion dur="2.4s" begin=".4s" repeatCount="indefinite" path="M200,170 L80,120"/></circle>
+      <circle r="5" class="pulse"><animateMotion dur="2.4s" begin=".8s" repeatCount="indefinite" path="M200,170 L320,120"/></circle>
+      <circle r="5" class="pulse"><animateMotion dur="2.4s" begin="1.2s" repeatCount="indefinite" path="M200,170 L110,270"/></circle>
+      <circle r="5" class="pulse"><animateMotion dur="2.4s" begin="1.6s" repeatCount="indefinite" path="M200,170 L290,270"/></circle>
+      <g font-family="JetBrains Mono" font-size="16" fill="#5ee08a" text-anchor="middle">
+        <circle class="node" cx="200" cy="50" r="22"/><text class="chk" style="--d:0" x="200" y="56">✓</text>
+        <circle class="node" cx="80" cy="120" r="22"/><text class="chk" style="--d:1" x="80" y="126">✓</text>
+        <circle class="node" cx="320" cy="120" r="22"/><text class="chk" style="--d:2" x="320" y="126">✓</text>
+        <circle class="node" cx="110" cy="270" r="22"/><text class="chk" style="--d:3" x="110" y="276">✓</text>
+        <circle class="node" cx="290" cy="270" r="22"/><text class="chk" style="--d:4" x="290" y="276">✓</text>
+        <rect x="168" y="150" width="64" height="40" rx="8" fill="#e3b04b"/><text x="200" y="176" fill="#0c1220" font-size="13" font-weight="600">new tx</text>
+      </g>
+    </svg>
+  </div>
+</section>
+
+<!-- 5 CONSENSUS -->
+<section class="slide">
+  <div class="kicker rv">01 · Crypto basics</div>
+  <h2 class="rv" style="--d:1">The value proposition: consensus</h2>
+  <blockquote class="rv" style="--d:2">Unlike traditional ledgers policed by a central authority, blockchain "offers greater transparency as to ownership by being based on consensus as to the accuracy of the transactions consummated on the network."</blockquote>
+  <blockquote class="rv" style="--d:3">"[B]ecause adding, changing, or removing information from the blockchain is made purposefully difficult," it is "harder to falsify a transaction or hack into the ledger itself."</blockquote>
+  <p class="cite rv" style="--d:4;margin-bottom:28px">Friel v. Dapper Labs, Inc., 657 F. Supp. 3d 422, 426–27 (S.D.N.Y. 2023).</p>
+  <p class="callout rv" style="--d:5">Takeaway: security comes from making cheating <strong>expensive</strong>. Validators are paid to bear that cost — and that payment is what <em>Paschall</em> taxes.</p>
+</section>
+
+<!-- 6 POW vs POS -->
+<section class="slide">
+  <div class="kicker rv">01 · Crypto basics</div>
+  <h2 class="rv" style="--d:1">Two ways to reach consensus</h2>
+  <div class="grid2">
+    <div class="card rv" style="--d:2">
+      <span class="tag">"Mining" · Bitcoin</span>
+      <h3>Proof of Work</h3>
+      <div id="hash">nonce 000000 → hash 0000…</div>
+      <ul class="b small">
+        <li>Miners race to solve a computational puzzle to add the next block; other nodes verify → <strong>token reward</strong></li>
+        <li>Cost of cheating: wasted <strong>electricity and hardware</strong></li>
+      </ul>
+    </div>
+    <div class="card rv" style="--d:3">
+      <span class="tag y">"Staking" · Ethereum (since 2022), Cardano</span>
+      <h3>Proof of Stake</h3>
+      <div class="coins">
+        <div class="coin" style="--d:0;--h:22px"></div><div class="coin" style="--d:1;--h:34px"></div><div class="coin" style="--d:2;--h:46px"></div><div class="coin" style="--d:3;--h:58px"></div>
+        <span class="cite" style="margin-left:10px;align-self:center">tokens locked as collateral</span>
+      </div>
+      <ul class="b gold small">
+        <li>Validators are selected algorithmically, weighted by stake (and sometimes tenure or chance) → <strong>token reward</strong></li>
+        <li>Uses ~99.9% less energy than proof of work</li>
+        <li>Cost of cheating: <strong>capital</strong> — penalties or forfeited stake ("slashing") on many networks. Pooling lets small holders join in.</li>
+      </ul>
+    </div>
+  </div>
+  <p class="muted small rv" style="--d:4;margin-top:20px">Both run on public blockchains. The real difference is what the validator puts at risk: energy or capital.</p>
+</section>
+
+<!-- 7 BASELINE -->
+<section class="slide">
+  <div class="kicker rv">02 · Pre-<em>Paschall</em> baseline</div>
+  <h2 class="rv" style="--d:1">How the law stood before <em>Paschall</em></h2>
+  <div class="tl">
+    <div class="rv" style="--d:2"><span class="dot"></span><div class="yr">2014</div><h3>I.R.S. Notice 2014-21</h3><p>Virtual currency is <strong>property</strong>, which may be a capital asset. Mined coins are gross income at FMV <strong>on receipt</strong>.</p></div>
+    <div class="rv" style="--d:3"><span class="dot"></span><div class="yr">2021–22</div><h3><em>Jarrett v. United States</em> (M.D. Tenn.)</h3><p>A Tezos staker sues for a refund, arguing rewards are self-created property. The IRS <strong>pays the refund</strong>; the case is dismissed as moot. No ruling.</p></div>
+    <div class="rv" style="--d:4"><span class="dot" style="border-color:var(--gold)"></span><div class="yr">July 2023</div><h3>Rev. Rul. 2023-14</h3><p>Staking rewards are income in the year the staker gains <strong>"dominion and control,"</strong> valued at FMV on that date.</p></div>
+    <div class="rv" style="--d:5"><span class="dot"></span><div class="yr">2023</div><h3><em>Kim v. Commissioner</em></h3><p>T.C. Memo. 2023-91: cryptocurrency is treated as property for federal income tax purposes.</p></div>
+  </div>
+  <p class="callout rv" style="--d:6;margin-top:40px">Open question: the IRS took a position, but no court had tested it. Would taxing staking rewards on receipt hold up?</p>
+</section>
+
+<!-- 8 FACTS -->
+<section class="slide">
+  <div class="kicker rv">03 · <em>Paschall</em> — facts</div>
+  <h2 class="rv" style="--d:1">The facts</h2>
+  <div class="grid2" style="grid-template-columns:1fr 1fr;align-items:center">
+    <ul class="b">
+      <li class="rv" style="--d:2">Paschall held <strong>Cardano (ADA)</strong> on eToro, a hosted platform. Cardano uses proof of stake.</li>
+      <li class="rv" style="--d:3">eToro staked users' tokens <strong>by default</strong>. Users could opt out, but then received no rewards.</li>
+      <li class="rv" style="--d:4">eToro passed <strong>75–90%</strong> of rewards to users, depending on membership tier, and kept the rest.</li>
+      <li class="rv" style="--d:5">Paschall's tokens were staked all of 2021, earning <strong>monthly rewards automatically</strong>. Sounds like a dividend?</li>
+    </ul>
+    <svg viewBox="0 0 520 380" class="flow rv" style="--d:3">
+      <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5a6888"/></marker></defs>
+      <rect class="box" x="20" y="150" width="130" height="70" rx="10"/><text x="85" y="180" text-anchor="middle" font-size="17" font-weight="600">Paschall</text><text x="85" y="202" text-anchor="middle" font-size="13" fill="#9aa3b8">ADA holder</text>
+      <rect class="box" x="200" y="150" width="130" height="70" rx="10" style="stroke:#7aa7ff"/><text x="265" y="180" text-anchor="middle" font-size="17" font-weight="600">eToro</text><text x="265" y="202" text-anchor="middle" font-size="13" fill="#9aa3b8">staking pool</text>
+      <rect class="box" x="380" y="150" width="130" height="70" rx="10" style="stroke:#5ee08a"/><text x="445" y="180" text-anchor="middle" font-size="17" font-weight="600">Cardano</text><text x="445" y="202" text-anchor="middle" font-size="13" fill="#9aa3b8">validation</text>
+      <path d="M150,170 L198,170" stroke="#5a6888" stroke-width="2" marker-end="url(#ar)"/>
+      <path d="M330,170 L378,170" stroke="#5a6888" stroke-width="2" marker-end="url(#ar)"/>
+      <path d="M445,220 C445,320 85,320 85,222" fill="none" stroke="#5a6888" stroke-width="2" stroke-dasharray="5 5" marker-end="url(#ar)"/>
+      <text x="265" y="345" text-anchor="middle" font-size="15" fill="#5ee08a">monthly reward: 75–90% to user</text>
+      <path d="M265,150 L265,95" stroke="#5a6888" stroke-width="2" stroke-dasharray="5 5" marker-end="url(#ar)"/>
+      <text x="265" y="82" text-anchor="middle" font-size="15" fill="#e3b04b">10–25% kept by eToro</text>
+      <text x="115" y="140" font-size="12" fill="#9aa3b8">stake (default)</text>
+      <circle r="6" fill="#e3b04b"><animateMotion dur="3s" repeatCount="indefinite" path="M445,220 C445,320 85,320 85,222"/></circle>
+      <circle r="6" fill="#e3b04b"><animateMotion dur="3s" begin="1.5s" repeatCount="indefinite" path="M445,220 C445,320 85,320 85,222"/></circle>
+      <circle r="5" fill="#5ee08a"><animateMotion dur="1.6s" repeatCount="indefinite" path="M150,170 L378,170"/></circle>
+    </svg>
+  </div>
+</section>
+
+<!-- 9 CHART -->
+<section class="slide">
+  <div class="kicker rv">03 · <em>Paschall</em> — facts</div>
+  <h2 class="rv" style="--d:1">2021: always de-risk, folks!</h2>
+  <svg viewBox="0 0 1120 440" width="1120" class="rv" style="--d:1">
+    <defs><linearGradient id="gf" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#5ee08a" stop-opacity=".35"/><stop offset="1" stop-color="#5ee08a" stop-opacity="0"/></linearGradient></defs>
+    <g id="axes"></g>
+    <path id="adaFill" fill="url(#gf)"/>
+    <path id="adaLine" pathLength="1"/>
+    <g class="ann" style="--d:1500">
+      <circle id="pk" r="7" fill="#e3b04b"/><text id="pkT" font-family="JetBrains Mono" font-size="15" fill="#e3b04b" text-anchor="middle">ATH ≈ $3.10 · Sep 2</text>
+    </g>
+    <g class="ann" style="--d:2600">
+      <line id="dl" stroke="#f07167" stroke-width="2" stroke-dasharray="4 4"/><text id="dlT" font-family="JetBrains Mono" font-size="14" fill="#f07167" text-anchor="end">eToro delists ADA (Nov)</text>
+    </g>
+    <g class="ann" style="--d:3200">
+      <circle id="ye" r="7" fill="#5ee08a"/><text id="yeT" font-family="JetBrains Mono" font-size="15" fill="#5ee08a" text-anchor="end">Dec 31 ≈ $1.31</text>
+    </g>
+  </svg>
+  <p class="muted small rv" style="--d:4;margin-top:6px">Cardano went from ~$0.18 to a $3.10 peak to ~$1.31 in one year (approximate prices). Each monthly reward is taxed at its <strong>value on the day it was received</strong>, even if the price later falls.</p>
+</section>
+
+<!-- 10 FACTS CONT -->
+<section class="slide">
+  <div class="kicker rv">03 · <em>Paschall</em> — facts</div>
+  <h2 class="rv" style="--d:1">Facts, continued</h2>
+  <div class="tl" style="grid-template-columns:repeat(3,1fr)">
+    <div class="rv" style="--d:2"><span class="dot" style="border-color:var(--red)"></span><div class="yr" style="color:var(--red)">Nov 2021</div><h3>eToro delists Cardano</h3><p>Citing a shifting regulatory environment, eToro restricts transfers of ADA to outside wallets and platforms. <strong>But Paschall could still sell for cash, and chose not to.</strong></p></div>
+    <div class="rv" style="--d:3"><span class="dot"></span><div class="yr">2022</div><h3>Restrictions lifted</h3><p>Paschall moves his tokens off-platform.</p></div>
+    <div class="rv" style="--d:4"><span class="dot" style="border-color:var(--gold)"></span><div class="yr" style="color:var(--gold)">IRS position</div><h3>All 2021 rewards = 2021 income</h3><p>Each monthly reward is taxable when received.</p></div>
+  </div>
+  <p class="callout rv" style="--d:5;margin-top:48px;font-size:24px">The issue: were staking rewards income <strong>on receipt</strong>? And did the transfer restriction defeat "dominion and control" in 2021?</p>
+</section>
+
+<!-- 11 POSTURE -->
+<section class="slide">
+  <div class="kicker rv">03 · <em>Paschall</em> — posture</div>
+  <h2 class="rv" style="--d:1">Procedural posture</h2>
+  <p class="rv" style="--d:2;margin-bottom:14px"><em>Paschall v. Comm'r</em>, T.C. Memo. 2026-46 — a <strong>memorandum</strong> opinion, which the Tax Court describes this way:</p>
+  <blockquote class="rv" style="--d:3;font-size:23px">"Generally, a Memorandum Opinion is issued in a regular case that <u>does not involve a novel legal issue</u>. A Memorandum Opinion addresses cases where the law is settled or factually driven."</blockquote>
+  <p class="cite rv" style="--d:3;margin:-12px 0 22px 30px">U.S. Tax Court, Guidance for Petitioners: Things That Occur After Trial (emphasis added).</p>
+  <ul class="b small">
+    <li class="rv" style="--d:4">This was a question of <strong>first impression</strong>, yet it came out as a memo.</li>
+    <li class="rv" style="--d:5"><strong>Burden of proof didn't matter:</strong> the rewards were 2021 income even if the Commissioner bore the burden.</li>
+    <li class="rv" style="--d:6">The Court reasoned <strong>from first principles, not Rev. Rul. 2023-14</strong>. Revenue rulings never bound the court, and after <em>Loper Bright</em> courts are even less likely to defer.</li>
+    <li class="rv" style="--d:7">The Court clearly wanted <strong>expert economic analysis</strong>. It was silent on <em>Jarrett</em>. Opportunistic enforcement?</li>
+  </ul>
+</section>
+
+<!-- 12 HOLDING -->
+<section class="slide">
+  <div class="kicker rv">03 · <em>Paschall</em> — holding</div>
+  <h2 class="rv" style="--d:1">A ruling from whole cloth: staking rewards are income when received</h2>
+  <div class="grid2" style="grid-template-columns:repeat(3,1fr);gap:22px">
+    <div class="card rv" style="--d:2"><span class="tag g">1 · Breadth</span><p class="small" style="font-family:var(--serif);font-size:21px">Presume Congress meant "to use the full measure of its taxing power."</p><p class="cite" style="margin-top:14px">James v. United States, 366 U.S. 213, 218–19 (1961)</p></div>
+    <div class="card rv" style="--d:3"><span class="tag g">2 · Accession</span><p class="small" style="font-family:var(--serif);font-size:21px">Income = "undeniable accessions to wealth, clearly realized, and over which the taxpayers have complete dominion."</p><p class="cite" style="margin-top:14px">Comm'r v. Glenshaw Glass Co., 348 U.S. 426, 431 (1955)</p></div>
+    <div class="card rv" style="--d:4"><span class="tag g">3 · Control</span><p class="small" style="font-family:var(--serif);font-size:21px">"The power to dispose of income is the equivalent of ownership of it."</p><p class="cite" style="margin-top:14px">Helvering v. Horst, 311 U.S. 112, 118 (1940)</p></div>
+  </div>
+  <p class="callout g rv" style="--d:5;margin-top:30px">Applied: Paschall could convert his rewards to cash at any time, even during the transfer restriction. So he had dominion and control in 2021.</p>
+</section>
+
+<!-- 13 MACOMBER -->
+<section class="slide">
+  <div class="kicker rv">04 · Critiques</div>
+  <h2 class="rv" style="--d:1">Distinguishing <em>Eisner v. Macomber</em></h2>
+  <div class="grid2" style="grid-template-columns:1.2fr .8fr;gap:30px">
+    <div>
+      <p class="rv small" style="--d:2;margin-bottom:12px">Monthly tokens look like a stock dividend, and <em>Macomber</em> held that a stock dividend is <strong>not a realization event</strong>:</p>
+      <blockquote class="rv" style="--d:3;font-size:20px">The dividend "did not alter the pre-existing proportionate interest of any stockholder or increase the intrinsic value of his holding."</blockquote>
+      <p class="cite rv" style="--d:3;margin:-14px 0 16px 30px">Eisner v. Macomber, 252 U.S. 189 (1920). Think of the pizza: more slices, same pie.</p>
+      <ul class="b small">
+        <li class="rv" style="--d:4"><strong>The Court:</strong> rewards go only to stakers, so each staker gains real value <em>relative to non-stakers</em>. That is a shift in proportionate interest, which <em>Macomber</em> lacked.</li>
+        <li class="rv" style="--d:5"><strong>But:</strong> distinguishing <em>Macomber</em> doesn't show that realization occurred. The reasoning sounds more like the dissents: Holmes (the ordinary meaning of "income") and Brandeis (economic substance over form).</li>
+      </ul>
+    </div>
+    <div class="rv" style="--d:3;display:flex;flex-direction:column;gap:22px;justify-content:center">
+      <div>
+        <div class="tag" style="display:block;text-align:center">Stock dividend</div>
+        <div class="pieWrap">
+          <div class="pie before" style="background:conic-gradient(#e3b04b 0 25%,#2a3654 0 50%,#3a4767 0 75%,#2a3654 0)"></div>
+          <div class="pie after" style="background:repeating-conic-gradient(from 0deg,transparent 0 44.6deg,#0c1220 44.6deg 45deg),conic-gradient(#e3b04b 0 25%,#2a3654 0 50%,#3a4767 0 75%,#2a3654 0)"></div>
+        </div>
+        <div class="pieLbl"><span class="before">4 slices · you own 1 = 25%</span><span class="after">8 slices · you own 2 = 25%</span></div>
+      </div>
+      <div>
+        <div class="tag y" style="display:block;text-align:center">Staking reward</div>
+        <div class="pieWrap">
+          <div class="pie before" style="background:conic-gradient(#e3b04b 0 25%,#2a3654 0 50%,#3a4767 0 75%,#2a3654 0)"></div>
+          <div class="pie after" style="background:conic-gradient(#e3b04b 0 25.6%,#2a3654 0 51.2%,#3a4767 0 75.6%,#2a3654 0)"></div>
+        </div>
+        <div class="pieLbl"><span class="before">4 holders · 100 tokens each</span><span class="after">2 stake +5% → you 25.6%, non-staker 24.4%</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 14 SELF-CREATED -->
+<section class="slide">
+  <div class="kicker rv">04 · Critiques</div>
+  <h2 class="rv" style="--d:1">Self-created property? Rejected.</h2>
+  <div class="grid2">
+    <div class="card rv" style="--d:2">
+      <div class="icon">🎂 📖 🌾</div>
+      <span class="tag">Taxpayer</span>
+      <p class="small" style="font-family:var(--serif);font-size:21px">Staking tokens are "like a baker's cake or a writer's book — products of labor and capital that yield income only upon sale."</p>
+    </div>
+    <div class="card rv" style="--d:3">
+      <div class="icon">⚖️</div>
+      <span class="tag y">Court</span>
+      <p class="small" style="font-family:var(--serif);font-size:21px">"Their analogy is misplaced. Stakers do not create anything . . . The fact that these tokens may be newly created is immaterial because the stakers are not the ones who created them."</p>
+    </div>
+  </div>
+  <div class="callout rv" style="--d:4;margin-top:26px">
+    <p style="font-size:20px;margin-bottom:8px"><strong>The carve-out:</strong> "petitioners were not owners or operators of a staking pool; unlike the baker or writer, they lacked the power to decide whether (and when) the property was created."</p>
+    <p class="small muted">So owners and operators of staking pools, who do control whether and when tokens are created, may still have a self-created property argument. Individual stakers don't.</p>
+  </div>
+</section>
+
+<!-- 15 WHO STAKES -->
+<section class="slide">
+  <div class="kicker rv">04 · Critiques</div>
+  <h2 class="rv" style="--d:1">A gap in the record: who actually stakes?</h2>
+  <p class="rv" style="--d:2;margin-bottom:22px">We don't know how much staking happens through <strong>hosted platforms</strong> (eToro, Coinbase) and how much happens from <strong>self-custody wallets</strong>. On Cardano, for example, holders can delegate directly from their own wallets. The opinion doesn't address it, and the outcome may depend on it.</p>
+  <div class="grid2" style="grid-template-columns:repeat(3,1fr);gap:20px">
+    <div class="card rv" style="--d:3"><span class="tag y">The <em>Macomber</em> analogy</span><p class="small">The Court's distinction depends on stakers gaining <strong>at non-stakers' expense</strong>. If nearly everyone stakes (platforms opt users in by default, and self-custody delegation is easy), rewards are close to pro rata. Then it looks a lot more like a stock dividend.</p></div>
+    <div class="card rv" style="--d:4"><span class="tag y">Dominion and control</span><p class="small">Hosted stakers depend on the platform: eToro could, and did, restrict transfers. Self-custody stakers control their own keys. Paschall's hosted facts were arguably the <strong>weakest</strong> case for control, so the holding likely reaches further.</p></div>
+    <div class="card rv" style="--d:5"><span class="tag y">Who gets taxed in practice</span><p class="small">Platforms report rewards to the IRS; self-custody stakers mostly self-report. Self-custody stakers who run their own pool may also fit the <strong>operator carve-out</strong>. Similar stakers could end up with very different results.</p></div>
+  </div>
+</section>
+
+<!-- 16 CONTRADICTIONS -->
+<section class="slide">
+  <div class="kicker rv">04 · Critiques</div>
+  <h2 class="rv" style="--d:1;font-size:38px;margin-bottom:22px">Doctrinally tidy, internally inconsistent, and blind to how crypto works</h2>
+  <div class="grid2" style="gap:28px">
+    <div class="rv" style="--d:2">
+      <h3 style="color:var(--red)">The Court contradicts itself</h3>
+      <ul class="b small">
+        <li><strong>Stock or cash?</strong> To distinguish <em>Macomber</em>, tokens are treated like <strong>shares</strong> (a proportionate interest). To apply <em>Glenshaw Glass</em> and <em>Horst</em>, they are treated like <strong>cash</strong>. They can't be both.</li>
+        <li><strong>Zero-sum or windfall?</strong> The <em>Macomber</em> distinction rests on value shifting from non-stakers to stakers. Yet the Court taxes the <strong>full</strong> reward at FMV and ignores the dilution that offsets part of it.</li>
+        <li><strong>Who creates?</strong> Stakers "do not create anything," yet pool operators who decide "whether (and when)" tokens are created might. Staking is either creation or it isn't.</li>
+      </ul>
+    </div>
+    <div class="rv" style="--d:3">
+      <h3 style="color:var(--green)">How crypto actually works</h3>
+      <ul class="b small">
+        <li><strong>Cash vs. coin:</strong> the <em>Glenshaw Glass</em> taxpayer received dollars. Paschall received more of the same coin.</li>
+        <li><strong>Holders stay in crypto.</strong> The Court relied on Paschall's ability to cash out, but staying in crypto is the whole point. A theoretical power to sell is a poor proxy for realized gain.</li>
+        <li><strong>Volatility:</strong> a reward valued at about $3 in September was worth about $1.31 by December. Tax is owed on value the staker may never see.</li>
+        <li><strong>Staking is network security</strong> that every holder benefits from. It's not a passive return.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- 16 ALT FRAMING -->
+<section class="slide">
+  <div class="kicker rv">04 · Critiques</div>
+  <h2 class="rv" style="--d:1">An alternative framing: dilution, not income</h2>
+  <div class="grid2" style="grid-template-columns:1.1fr .9fr;gap:40px">
+    <div>
+      <p class="rv small" style="--d:2;margin-bottom:16px">New tokens increase supply, which dilutes every holder. Much of a staking reward just <strong>keeps the staker even</strong>; the people who actually lose are the ones who opted out. Staking is the price of decentralized verification.</p>
+      <h3 class="rv" style="--d:3;font-size:22px">Split the reward in two</h3>
+      <div class="card rv" style="--d:4;padding:16px 20px;margin-bottom:12px"><span class="tag g">① Pro-rata share</span><p class="small">The portion that offsets dilution and compensates for the risk of backing the network, proportional to tokens staked. Treat it like <strong>capital</strong>: no gain yet.</p></div>
+      <div class="card rv" style="--d:5;padding:16px 20px"><span class="tag y">② Transfer from opt-outs</span><p class="small">Value shifted from non-stakers to stakers: a true accession to wealth. Treat it as <strong>ordinary income</strong>.</p></div>
+    </div>
+    <div class="rv" style="--d:3">
+      <div class="bars">
+        <div class="bar"><i style="--a:120px;--b:126px;background:var(--gold)"></i><span>you (stake)</span></div>
+        <div class="bar"><i style="--a:120px;--b:126px;background:var(--gold);opacity:.7"></i><span>B (stake)</span></div>
+        <div class="bar"><i style="--a:120px;--b:114px;background:#5a6888"></i><span>C (opt out)</span></div>
+        <div class="bar"><i style="--a:120px;--b:114px;background:#5a6888"></i><span>D (opt out)</span></div>
+      </div>
+      <p class="cite" style="margin-top:14px;text-align:center">Share of the network as new tokens are issued to stakers</p>
+      <p class="callout small" style="margin-top:22px">A second line of attack: the Court treats this as zero-sum, like issuing new stock. But more tokens aren't necessarily worth more to the holder. Price, liquidity, and lockups all matter.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 17 IMPLICATIONS -->
+<section class="slide">
+  <div class="kicker rv">05 · Implications</div>
+  <h2 class="rv" style="--d:1">Implications</h2>
+  <div class="grid2" style="gap:22px">
+    <div class="card rv" style="--d:2"><span class="tag r">Inconsistent treatment</span><p class="small">The "who created it?" test may treat miners and pool operators differently from passive stakers. Yet all of them bear cost and risk, and all are essential to the network.</p></div>
+    <div class="card rv" style="--d:3"><span class="tag r">A loophole for the platforms</span><p class="small">The pool-operator carve-out lets exchanges like eToro claim deferral while individual stakers pay tax on receipt. A legislative fix has been proposed: the Tax Clarity for Mining and Staking Act (Rep. Carey).</p></div>
+    <div class="card rv" style="--d:4"><span class="tag">Why people stake</span><p class="small">Many blockchains require fees in their native token, and for many holders (privacy, libertarian values) the point is to stay on-chain. Staking is about the coin, not the platform.</p></div>
+    <div class="card rv" style="--d:5"><span class="tag">Supply and value</span><p class="small">Supply caps vary: Bitcoin at 21M coins, Cardano at 45B ADA. Prices are driven largely by speculation, but validation itself secures the network and may <strong>raise the value of every token</strong>.</p></div>
+  </div>
+</section>
+
+<!-- 18 AMBIGUITIES -->
+<section class="slide">
+  <div class="kicker rv">05 · Implications</div>
+  <h2 class="rv" style="--d:1">Open questions and room for good lawyering</h2>
+  <div class="grid2">
+    <div class="rv" style="--d:2">
+      <h3 style="color:var(--red)">Ambiguities</h3>
+      <ul class="b small">
+        <li><strong>Jurisdiction:</strong> where does staking income arise when validation happens everywhere at once? Where do the stakers live?</li>
+        <li><strong>Choose your analogy:</strong> harvesting crops (self-created property) or notarizing documents (services income)?</li>
+        <li><strong>Pools:</strong> when exactly does a staker become an "owner or operator"?</li>
+      </ul>
+    </div>
+    <div class="rv" style="--d:3">
+      <h3 style="color:var(--green)">Opportunities</h3>
+      <ul class="b small">
+        <li><strong>Thin precedent:</strong> <em>Jarrett</em> was mooted, the revenue ruling gets no deference, and <em>Paschall</em> is only a memo. There's room for novel arguments, and the Court wants expert analysis.</li>
+        <li><strong>Loss harvesting:</strong> rewards are taxed at FMV on receipt, and the wash-sale rule (§ 1091) covers stock and securities, not crypto. If prices fall, sell, book the loss, and buy back.</li>
+        <li><strong>Low-bracket and de minimis</strong> stakers: compliance burden vs. revenue.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- 19 QUESTIONS -->
+<section class="slide" style="display:flex;flex-direction:column;justify-content:center">
+  <h1 class="rv" style="font-size:110px;text-align:center">Questions</h1>
+</section>
+
+<div id="brand">HAVE YOUR STAKE · A. CIACCI</div>
+<div id="count"></div>
+<div id="progress"></div>
+</div></div>
+<div id="hint">← → or click to navigate · F for fullscreen</div>
+
+<script>
+(function(){
+  const stage=document.getElementById('stage');
+  const slides=[...document.querySelectorAll('.slide')];
+  let i=Math.max(0,Math.min(slides.length-1,(parseInt(location.hash.slice(1))||1)-1));
+
+  function fit(){const s=Math.min(innerWidth/1280,innerHeight/720);stage.style.transform='scale('+s+')';}
+  addEventListener('resize',fit);fit();
+
+  function show(n){
+    i=Math.max(0,Math.min(slides.length-1,n));
+    slides.forEach((s,k)=>s.classList.toggle('active',k===i));
+    document.getElementById('count').textContent=(i+1)+' / '+slides.length;
+    document.getElementById('progress').style.width=((i+1)/slides.length*100)+'%';
+    document.getElementById('brand').style.opacity=i===0?0:1;
+    history.replaceState(null,'','#'+(i+1));
+  }
+  addEventListener('keydown',e=>{
+    if(['ArrowRight','PageDown',' ','Enter'].includes(e.key)){e.preventDefault();show(i+1)}
+    else if(['ArrowLeft','PageUp','Backspace'].includes(e.key)){e.preventDefault();show(i-1)}
+    else if(e.key==='Home')show(0); else if(e.key==='End')show(slides.length-1);
+    else if(e.key==='f'||e.key==='F'){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen().catch(()=>{})}
+  });
+  addEventListener('click',e=>{show(e.clientX>innerWidth/3?i+1:i-1)});
+  let tx=null;
+  addEventListener('touchstart',e=>{tx=e.touches[0].clientX},{passive:true});
+  addEventListener('touchend',e=>{if(tx==null)return;const d=e.changedTouches[0].clientX-tx;if(Math.abs(d)>40)show(d<0?i+1:i-1);tx=null});
+  setTimeout(()=>{document.getElementById('hint').style.opacity=0},4000);
+
+  // proof-of-work ticker
+  const hash=document.getElementById('hash');let nonce=0;
+  const hex=n=>Array.from({length:n},()=>'0123456789abcdef'[Math.random()*16|0]).join('');
+  setInterval(()=>{if(!hash.closest('.slide').classList.contains('active'))return;
+    nonce+=Math.floor(Math.random()*9000);
+    const win=Math.random()<.04;
+    hash.innerHTML='nonce '+String(nonce).padStart(7,'0')+' → '+(win?'<span style="color:#e3b04b">0000'+hex(14)+' ✓ block found</span>':hex(18)+'…');
+  },90);
+
+  // ADA 2021 chart (approximate prices)
+  const data=[[0,.18],[.5,.33],[1,.40],[1.5,.85],[1.9,1.30],[2.5,1.10],[3,1.20],[3.5,1.40],[4,1.35],[4.5,2.30],[4.75,1.40],[5,1.75],[5.5,1.55],[5.7,1.20],[6,1.40],[6.65,1.05],[7,1.30],[7.5,2.10],[7.75,2.80],[8.05,3.10],[8.5,2.45],[9,2.20],[9.5,2.15],[10,1.95],[10.5,2.05],[10.85,1.60],[11.5,1.25],[12,1.31]];
+  const X0=60,X1=1100,Y0=400,Y1=40,maxP=3.5;
+  const x=m=>X0+(X1-X0)*m/12, y=p=>Y0-(Y0-Y1)*p/maxP;
+  const d=data.map((p,k)=>(k?'L':'M')+x(p[0]).toFixed(1)+','+y(p[1]).toFixed(1)).join(' ');
+  document.getElementById('adaLine').setAttribute('d',d);
+  document.getElementById('adaFill').setAttribute('d',d+` L${x(12)},${Y0} L${x(0)},${Y0} Z`);
+  const ax=document.getElementById('axes');let g='';
+  [0,1,2,3].forEach(p=>{g+=`<line class="ax" x1="${X0}" x2="${X1}" y1="${y(p)}" y2="${y(p)}" stroke-dasharray="${p?'3 5':''}"/><text class="axl" x="${X0-10}" y="${y(p)+4}" text-anchor="end">$${p.toFixed(2)}</text>`});
+  'JFMAMJJASOND'.split('').forEach((m,k)=>{g+=`<text class="axl" x="${x(k+.5)}" y="${Y0+24}" text-anchor="middle">${m}</text>`});
+  ax.innerHTML=g;
+  const set=(id,a)=>{const el=document.getElementById(id);for(const k in a)el.setAttribute(k,a[k])};
+  set('pk',{cx:x(8.05),cy:y(3.10)});set('pkT',{x:x(8.05),y:y(3.10)-16});
+  set('dl',{x1:x(10.1),x2:x(10.1),y1:y(3.3),y2:Y0});set('dlT',{x:x(10.1)-8,y:y(3.3)+4});
+  set('ye',{cx:x(12),cy:y(1.31)});set('yeT',{x:x(12)-14,y:y(1.31)+30});
+
+  show(i);
+})();
+</script>
+</body>
+</html>
